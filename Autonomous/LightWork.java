@@ -38,7 +38,8 @@ public class LightWork extends LinearOpMode
     private final static double CLAW_HOME = -0.3;
     private final static double CLAW_MIN_RANGE = .65;
     private final static double CLAW_MAX_RANGE = .8;
-    private  final double CLAW_SPEED = 0.1;
+    private final double BACKRIGHT_OFFSET = 0.007;
+    private final double CLAW_SPEED = 0.1;
     private final double ROBOT_SPEED = 0.35; // Speed of robot
     private final double GROUND_JUNCTION = 2.0; // Length slides must move for ground junction
     private final double LOW_JUNCTION = 13.5; // Length slides must move for low junction
@@ -55,7 +56,7 @@ public class LightWork extends LinearOpMode
         frontleft.setPower(pow);
         frontright.setPower(pow);
         backleft.setPower(pow);
-        backright.setPower(pow + 0.007);
+        backright.setPower(pow + BACKRIGHT_OFFSET);
     }
 
     private void power(double fL, double fR, double bL, double bR)
@@ -63,7 +64,7 @@ public class LightWork extends LinearOpMode
         frontleft.setPower(fL);
         frontright.setPower(fR);
         backleft.setPower(bL);
-        backright.setPower(bR + 0.007);
+        backright.setPower(bR + BACKRIGHT_OFFSET);
     }
 
     private void stopDrive()
