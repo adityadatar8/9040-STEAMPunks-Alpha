@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -35,9 +37,12 @@ public class Lexus extends LinearOpMode
     private final double GROUND_JUNCTION = 2.0; // Length slides must move for ground junction
     private final double LOW_JUNCTION = 13.5; // Length slides must move for low junction
     private final double MEDIUM_JUNCTION = 23.5; // Length slides must move for medium junction
-    private final double HIGH_JUNCTION = 35.00; // Length slides must move for highest junction
+    private final double HIGH_JUNCTION = 33.52; // Length slides must move for highest junction
     private final double SPOOL_DIAMETER = 1.75; // Diameter of spool for linear slides
     private final double CUP_BASE_HEIGHT = 0.75;
+    BNO055IMU imu;
+    private Orientation lastOrientation;
+    private double currentAngle;
 
     @Override
     public void runOpMode()
@@ -68,7 +73,7 @@ public class Lexus extends LinearOpMode
         backright.setDirection(DcMotorEx.Direction.FORWARD);
         frontright.setDirection(DcMotorEx.Direction.FORWARD);
 
-        colorSensor = hardwareMap.get(ColorSensor.class, "Color Sensor");
+        colorSensor = hardwareMap.get(ColorSensor.class, "color sensor");
 
         slideExtender = hardwareMap.get(DcMotorEx.class, "slide extender");
         slideExtender.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -81,21 +86,31 @@ public class Lexus extends LinearOpMode
         claw.setPosition(CLAW_HOME);
         claw.setDirection(Servo.Direction.FORWARD);
 
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        parameters.loggingEnabled = true;
+        parameters.loggingTag = "IMU";
+        //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
         isPurple = false;
         isOrange = false;
         isGreen = false;
 
         // Coordinate system based on center point of claw (origin of grid in bottom left corner)
         // This autonomous assumes the robot is on the left side
-        xPos = 31.35; // inches from left wall to center point of claw
+        xPos = 38.5; // inches from left wall to center point of claw
         yPos = 2.5; // inches from back wall to center point of claw
         timer = new ElapsedTime();
 
-        telemetry.addData("Roadster", "Ready");
+        telemetry.addData("Lexus", "Ready");
         telemetry.update();
         waitForStart();
 
-        goToX(34.5);
+        goToX(33);
         // Go forward 20 inches before identifying color
         forward(24);
 
@@ -108,10 +123,10 @@ public class Lexus extends LinearOpMode
         // If something goes terribly wrong with the coordinate system,
         // just try hard coding the whole thing with forward, backward, left, and right
         // Coordinate system just makes it easier to code everything
-        goToY(55.65);
+        goToY(77.95);
         forward(6);
         backward(6);
-        goToX(78.25);
+        goToX(49.92);
         scoreCone(4);
 
         // Act on the identified color
@@ -119,7 +134,7 @@ public class Lexus extends LinearOpMode
         {
             // Right parking spot
             goToX(62);
-            //goToY(40);
+            goToY(40);
             telemetry.addData("Color", "Orange");
             telemetry.update();
         }
@@ -127,7 +142,7 @@ public class Lexus extends LinearOpMode
         {
             // Left parking spot
             goToX(11);
-            //goToY(36);
+            goToY(36);
             telemetry.addData("Color", "Green");
             telemetry.update();
 
@@ -136,7 +151,7 @@ public class Lexus extends LinearOpMode
         {
             // Middle Parking Spot
             goToX(36);
-            //goToY(36);
+            goToY(36);
             telemetry.addData("Color", "Purple");
             telemetry.update();
         }
@@ -194,25 +209,25 @@ public class Lexus extends LinearOpMode
             telemetry.addData("Forward", distance);
             telemetry.update();
         }*/
-        power(0.25); // Initial power applied
-        double progress = Math.abs((backleft.getCurrentPosition() / 537.7) * Math.PI); // number of inches traveled so far
-        while (Math.abs((double)(backleft.getCurrentPosition()) / (double)(backleft.getTargetPosition())) < 0.5)
+        power(0.3); // Initial power applied
+        double progress = Math.abs((frontleft.getCurrentPosition() / 537.7) * Math.PI); // number of inches traveled so far
+        while (Math.abs((double)(frontleft.getCurrentPosition()) / (double)(frontleft.getTargetPosition())) < 0.5)
         {
             // Accelerates for 1/2 of the path
             telemetry.addData("Accelerating", progress);
             telemetry.update();
             power(acceleratorTransform(progress)); // experiment with numbers in acceleratorTransform method
-            progress = Math.abs((backleft.getCurrentPosition() / 537.7) * Math.PI);
+            progress = Math.abs((frontleft.getCurrentPosition() / 537.7) * Math.PI);
         }
 
         // number of inches yet to be traveled
-        double error = Math.abs(((backleft.getTargetPosition() - backleft.getCurrentPosition()) / 537.7) * Math.PI);
+        double error = Math.abs(((frontleft.getTargetPosition() - frontleft.getCurrentPosition()) / 537.7) * Math.PI);
         while (frontleft.isBusy() || frontright.isBusy() || backleft.isBusy() || backright.isBusy())
         {
             telemetry.addData("Forward", distance);
             telemetry.update();
             power(acceleratorTransform(error)); // experiment with numbers in acceleratorTransform method
-            error = Math.abs(((backleft.getTargetPosition() - backleft.getCurrentPosition()) / 537.7) * Math.PI);
+            error = Math.abs(((frontleft.getTargetPosition() - frontleft.getCurrentPosition()) / 537.7) * Math.PI);
         }
         // Motors should stop moving after encoders reach their target position, but if they don't
         // then just add some sort of stopper into the code
@@ -220,7 +235,7 @@ public class Lexus extends LinearOpMode
 
         // Cut off power
         power(0.0);
-        sleep(100);
+        sleep(50);
         yPos += distance;
     }
 
@@ -283,7 +298,7 @@ public class Lexus extends LinearOpMode
 
         // Cut off power
         power(0.0);
-        sleep(100);
+        sleep(50);
         yPos -= distance;
     }
 
@@ -346,7 +361,7 @@ public class Lexus extends LinearOpMode
 
         // Cut off power
         power(0.0);
-        sleep(100);
+        sleep(50);
         xPos -= distance;
     }
 
@@ -409,7 +424,7 @@ public class Lexus extends LinearOpMode
 
         // Cut off power
         power(0.0);
-        sleep(100);
+        sleep(50);
         xPos += distance;
     }
 
@@ -450,24 +465,24 @@ public class Lexus extends LinearOpMode
         slideExtender.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         // Set the distance the motors travel
-        if (level == 0)
+        if (level == 3)
         {
-            slidePos = (int)((GROUND_JUNCTION / (SPOOL_DIAMETER * Math.PI)) * 537.7);
+            slidePos = (int)((HIGH_JUNCTION / ((1.5) * Math.PI)) * 537.7);
             slideExtender.setTargetPosition(slidePos);
         }
         else if (level == 1)
         {
-            slidePos = (int)((LOW_JUNCTION / (SPOOL_DIAMETER * Math.PI)) * 537.7);
+            slidePos = (int)((LOW_JUNCTION / ((1.5) * Math.PI)) * 537.7);
             slideExtender.setTargetPosition(slidePos);
         }
         else if (level == 2)
         {
-            slidePos = (int)((MEDIUM_JUNCTION / (SPOOL_DIAMETER * Math.PI)) * 537.7);
+            slidePos = (int)((MEDIUM_JUNCTION / ((1.5) * Math.PI)) * 537.7);
             slideExtender.setTargetPosition(slidePos);
         }
         else
         {
-            slidePos = (int)((HIGH_JUNCTION / (SPOOL_DIAMETER * Math.PI)) * 537.7);
+            slidePos = (int)((GROUND_JUNCTION / ((1.5) * Math.PI)) * 537.7);
             slideExtender.setTargetPosition(slidePos);
         }
 
@@ -481,10 +496,16 @@ public class Lexus extends LinearOpMode
         }
 
         // Cut off power momentarily and switch modes
+        slideExtender.setPower(0);
         power(0.0);
         slideExtender.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
-        slideExtender.setPower(0.12); // set power for staying in place
+        slideExtender.setPower(0.01); // set power for staying in place
+    }
+
+    private void slidesHold()
+    {
+        slideExtender.setPower(0.05);
     }
 
     private void slidesDown()
@@ -515,7 +536,7 @@ public class Lexus extends LinearOpMode
     {
         double clawSpeed = 0.0;
         timer.reset();
-        while ((int)timer.milliseconds() < 800)
+        while ((int)timer.milliseconds() < 650)
         {
             claw.setDirection(Servo.Direction.FORWARD);
             clawSpeed -= CLAW_SPEED;
@@ -529,7 +550,7 @@ public class Lexus extends LinearOpMode
     {
         double clawSpeed = 0.0;
         timer.reset();
-        while ((int)timer.milliseconds() < 800)
+        while ((int)timer.milliseconds() < 650)
         {
             claw.setDirection(Servo.Direction.REVERSE);
             clawSpeed -= CLAW_SPEED;
@@ -544,15 +565,14 @@ public class Lexus extends LinearOpMode
     {
         //backward(distance);
         slidesUp(3);
-        sleep(1200);
-        backward(distance -0.5);
-        sleep(200);
+        sleep(1000);
+        backward(distance);
+        sleep(150);
         openClaw();
-        sleep(350);
+        sleep(100);
         closeClaw();
-        forward(distance-0.35);
+        forward(distance);
         slidesDown();
-        //closeClaw();
     }
 
     // This is basically the goToPos() method split up into two parts
