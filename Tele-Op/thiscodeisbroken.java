@@ -35,7 +35,7 @@ public class thiscodeisbroken extends LinearOpMode {
     private final static double CLAW_MAX_RANGE = 0.15;
     private  final double CLAW_SPEED = 0.1;
 
-    //Declares variables for Turner
+    //eclares variables for Turner
     private final static double TURNER_HOME = 0.1;
     private final static double TURNER_MIN_RANGE = 0.1;
     private final static double TURNER_MAX_RANGE = 0.9;
@@ -93,11 +93,14 @@ public class thiscodeisbroken extends LinearOpMode {
             boolean right = gamepad1.right_stick_x < -0.1;
             boolean strafeLeft = gamepad1.left_bumper;
             boolean strafeRight = gamepad1.right_bumper;
-            boolean stop = gamepad1.a;
+            boolean stop = gamepad1.y;
             boolean turnleft180 = gamepad1.dpad_left;
             boolean turnright180 = gamepad1.dpad_right;
             boolean decelerate = gamepad1.a;
             boolean slowMode = gamepad1.left_trigger > 0.25;
+            boolean fastRightStrafe=gamepad1.b;
+            boolean fastLeftStrafe = gamepad1.x;
+            boolean fastForward = gamepad1.a;
 
             //Conditions for Controller2/Gamepad2 controls
             boolean up = gamepad2.right_trigger>0.25;
@@ -136,37 +139,54 @@ public class thiscodeisbroken extends LinearOpMode {
             //--------------------------------------Forward
             else if(forward){
                 isZero = false;
-                setMotorsPower(pow,pow,pow,pow);
+                if(fastForward)
+                    setMotorsPower(0.9,0.9,0.9,0.9);
+                else setMotorsPower(pow,pow,pow,pow);
                 telemetry.update();
             }
             //--------------------------------------Backward
             else if(backward){
                 isZero = false;
-                setMotorsPower(-pow, -pow, -pow, -pow);
+                if(fastForward)
+                    setMotorsPower(-0.9,-0.9,-0.9,-0.9);
+                else
+                    setMotorsPower(-pow, -pow, -pow, -pow);
                 telemetry.update();
             }
             //--------------------------------------Left
             else if(left){
                 isZero = false;
-                setMotorsPower(-pow,-pow,pow,pow);
+                if(fastForward)
+                    setMotorsPower(-0.9,-0.9,0.9,0.9);
+                else
+                    setMotorsPower(-pow,-pow,pow,pow);
                 telemetry.update();
             }
             //--------------------------------------Right
             else if(right){
                 isZero = false;
-                setMotorsPower(pow,pow,-pow, -pow);
+                if(fastForward)
+                    setMotorsPower(0.9,0.9,-0.9,-0.9);
+                else
+                    setMotorsPower(pow,pow,-pow, -pow);
                 telemetry.update();
             }
             //--------------------------------------StrafeLeft
             else if(strafeLeft){
                 isZero = false;
-                setMotorsPower(pow,-pow,pow,-pow);
+                if(fastForward)
+                    setMotorsPower(0.9,-0.9,0.9,-0.9);
+                else
+                    setMotorsPower(pow,-pow,pow,-pow);
                 telemetry.update();
             }
             //--------------------------------------StrafeRight
             else if(strafeRight){
                 isZero = false;
-                setMotorsPower(-pow,pow,-pow,pow);
+                if(fastForward)
+                    setMotorsPower(-0.9,0.9,-0.9,0.9);
+                else
+                    setMotorsPower(-pow,pow,-pow,pow);
                 telemetry.update();
             }
             //--------------------------------------Decelerate
@@ -208,6 +228,42 @@ public class thiscodeisbroken extends LinearOpMode {
                 setMotorsPower(0, 0, 0, 0);
                 speedMode = true;
             }
+            /*else if(fastRightStrafe){
+                isZero = false;
+                timer.reset();
+                while (timer.milliseconds() < 500)
+                {
+                    setMotorsPower(-1,1,-1,1);
+                    telemetry.update();
+                }
+                setMotorsPower(0, 0, 0, 0);
+
+                telemetry.update();
+            }
+            else if(fastLeftStrafe){
+                isZero = false;
+                timer.reset();
+                while (timer.milliseconds() < 500)
+                {
+                    setMotorsPower(1,-1,1,-1);
+                    telemetry.update();
+                }
+                setMotorsPower(0, 0, 0, 0);
+
+                telemetry.update();
+            }
+            else if(fastForward){
+                isZero = false;
+                timer.reset();
+                while (timer.milliseconds() < 1000)
+                {
+                    setMotorsPower(1,1,1,1);
+                    telemetry.update();
+                }
+                setMotorsPower(0, 0, 0, 0);
+
+                telemetry.update();
+            }*/
 
             //--------------------------------------StopController1Movements
             if(isZero){
@@ -219,13 +275,13 @@ public class thiscodeisbroken extends LinearOpMode {
             //--------------------------------------LinearSlidesUp
             if(up){
                 isZero = false;
-                slideExtender.setPower(-0.8);
+                slideExtender.setPower(-1);
                 telemetry.update();
             }
             //--------------------------------------LinearSlidesStay
             else if(stay){
                 slideExtender.setPower(0);
-                clawSpeed = 0;
+                //clawSpeed = 0;
                 telemetry.update();
                 isZero = false;
                 slideExtender.setPower(-0.15);
@@ -234,7 +290,7 @@ public class thiscodeisbroken extends LinearOpMode {
             //--------------------------------------LinearSlidesDown
             else if(down){
                 isZero = false;
-                slideExtender.setPower(.5);
+                slideExtender.setPower(1);
                 telemetry.update();
             }
             //--------------------------------------StopSlides
