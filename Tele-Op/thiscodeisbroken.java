@@ -121,7 +121,7 @@ public class thiscodeisbroken extends LinearOpMode {
             if(speedMode){pow = 0.47;}
 
             //Decreased the speed if condition was met and increased the speed otherwise
-            if(slowMode){pow = 0.25;}
+            if(slowMode){pow = 0.35;}
             else{pow = 0.47;}
 
             //closes claw
@@ -224,6 +224,9 @@ public class thiscodeisbroken extends LinearOpMode {
             }
             //--------------------------------------LinearSlidesStay
             else if(stay){
+                slideExtender.setPower(0);
+                clawSpeed = 0;
+                telemetry.update();
                 isZero = false;
                 slideExtender.setPower(-0.15);
                 telemetry.update();
@@ -241,6 +244,12 @@ public class thiscodeisbroken extends LinearOpMode {
                 clawSpeed = 0;
                 telemetry.update();
             }
+            else
+            {
+                slideExtender.setPower(0);
+                telemetry.update();
+            }
+
 
             //--------------------------------------ClawOpen
             if(clawOpen){
@@ -292,4 +301,3 @@ public class thiscodeisbroken extends LinearOpMode {
         }
     }
 }
-
